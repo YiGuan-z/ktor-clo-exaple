@@ -34,14 +34,16 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-cio-jvm:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
-//    implementation("org.ktorm:ktorm-core:$ktorm_version")
+    // https://mvnrepository.com/artifact/org.ktorm/ktorm-core
     implementation("org.ktorm:ktorm-core:3.6.0")
-    implementation("io.ktor:ktor-server-sessions-jvm:2.3.1")
-//    implementation("com.baomidou:mybatis-plus-kotlin:3.5.1")
-//    implementation("com.baomidou:mybatis-plus:3.5.1")
+    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
     implementation("mysql:mysql-connector-java:8.0.31")
     // https://mvnrepository.com/artifact/com.alibaba/druid
     implementation("com.alibaba:druid:1.2.18")
+//    implementation("org.ktorm:ktorm-core:$ktorm_version")
+//    implementation("io.ktor:ktor-server-sessions-jvm:2.3.1")
+//    implementation("com.baomidou:mybatis-plus-kotlin:3.5.1")
+//    implementation("com.baomidou:mybatis-plus:3.5.1")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }

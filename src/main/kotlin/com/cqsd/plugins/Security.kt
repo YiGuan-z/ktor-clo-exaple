@@ -36,8 +36,12 @@ fun Application.configureSecurity() {
         this.issuer = jwtIssuer
     }
     authentication {
+        /*
+        * 可以使用jwt(name) 保护单个作用域
+        * */
         jwt {
             realm = jwtRealm
+            //用于对token的解码
             verifier(
                 JWT
                     .require(Algorithm.HMAC256(jwtSecret))
@@ -45,6 +49,7 @@ fun Application.configureSecurity() {
                     .withIssuer(jwtIssuer)
                     .build()
             )
+            //用于对token的验证
             validate { credential ->
                 if (credential.payload.getClaim("userId").asLong() != -1L) {
                     JWTPrincipal(credential.payload)
@@ -52,9 +57,11 @@ fun Application.configureSecurity() {
                     null
                 }
             }
-//            challenge{ defaultScheme, realm ->
-//                call.respond(status = HttpStatusCode.Unauthorized, message = "Token is not valid or has expired")
-//            }
+            //验证失败如何返回
+            challenge{ defaultScheme, realm ->
+                call.respond(status = HttpStatusCode.Unauthorized, message = "Token is not valid or has expired : $realm ,$defaultScheme")
+            }
+
         }
     }
 }

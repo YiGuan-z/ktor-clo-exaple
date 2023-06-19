@@ -1,6 +1,7 @@
 package com.cqsd.route
 
-import com.cqsd.plugins.database
+
+import com.cqsd.plugins.def.database
 import com.cqsd.plugins.user
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -30,8 +31,7 @@ fun Route.demoRoutes() {
 
 private fun Route.ping() {
     get {
-        val users = database.user.toCollection(mutableListOf())
-//        call.respondText("ping...")
+        val users = application.database.user.toCollection(mutableListOf())
         call.respond(status = HttpStatusCode.OK, message = users)
     }
 }
