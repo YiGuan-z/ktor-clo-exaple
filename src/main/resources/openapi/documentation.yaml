@@ -4,7 +4,7 @@ info:
   description: "Application API"
   version: "1.0.0"
 servers:
-  - url: "http://0.0.0.0:8080"
+  - url: "http://localhost:8080"
 paths:
   /:
     get:
@@ -19,5 +19,46 @@ paths:
               examples:
                 Example#1:
                   value: "Hello World!"
+  /user/login:
+    post:
+      summary: 用户登录
+      description: 使用此接口进行用户登录。
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: 登录信息
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "1587276968338968578"
+              age:
+                type: integer
+                example: 18
+      responses:
+        '200':
+          description: 登录成功
+
+
 components:
   schemas:
+    UserLoginRequest:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1587276968338968578
+        age:
+          type: integer
+          example: 5254
+    UserLoginResponse:
+      type: object
+      properties:
+        token:
+          description: "token value"
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJqd3QtYXVkaWVuY2UiLCJpc3MiOiJodHRwOi8vMC4wLjAuMDo4MDgwIiwidXNlcklkIjoxNTg3Mjc2OTY4MzM4OTY4NTc4LCJleHAiOjE2ODcxNzk0NDl9.v4PyvKOOMVWxF0GSDi_tnJNSKrlP78mlsxX6AnrJrfA

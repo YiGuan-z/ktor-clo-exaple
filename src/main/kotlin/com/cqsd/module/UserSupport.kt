@@ -1,6 +1,5 @@
 package com.cqsd.module
 
-import io.ktor.server.auth.*
 import kotlinx.serialization.Serializable
 import org.ktorm.dsl.QueryRowSet
 import org.ktorm.schema.BaseTable

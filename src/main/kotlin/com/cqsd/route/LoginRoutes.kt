@@ -6,6 +6,7 @@ import com.cqsd.module.UserLoginRequest
 import com.cqsd.plugins.JwtConfig
 import com.cqsd.plugins.def.database
 import com.cqsd.plugins.user
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -20,9 +21,10 @@ import java.util.*
  * @date 2023/6/19-13:44
  **/
 fun Route.loginRoutes() {
+    val userDataBase = application.database.user
     post("/login") {
         val user: UserLoginRequest = call.receive()
-        application.database.user.find { it.id eq user.id }?.let {
+        userDataBase.find { it.id eq user.id }?.let {
             if (user.age == it.age) {
                 val token = JWT.create()
                     .withAudience(JwtConfig.audience)
@@ -33,5 +35,7 @@ fun Route.loginRoutes() {
                 call.respond(mapOf("token" to token))
             }
         }
+        call.respondText(text = "登陆失败", status = HttpStatusCode.Unauthorized)
     }
 }
+
