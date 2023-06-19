@@ -21,7 +21,8 @@ data class User(
     var age: Int,
     var email: String
 )
-
+@Serializable
+data class UserLoginRequest(val id:Long,val age: Int)
 object UserDefinition : BaseTable<User>("user") {
     val id = long("id").primaryKey()
     val name = varchar("name")
@@ -36,25 +37,10 @@ object UserDefinition : BaseTable<User>("user") {
      */
     override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean): User {
         return User(
-            id = row[id] ?: 0L,
+            id = row[id] ?: -1,
             name = row[name] ?: "",
             age = row[age] ?: 0,
             email = row[email] ?: ""
         )
     }
 }
-
-data class UserPrincipal(val name: String?, val userId: Long) : Principal
-//class User {
-//    var id: Long = 0
-//    var name: String? = null
-//    var age: Int = 0
-//    var email: String? = null
-//
-//    constructor(id: Long, name: String?, age: Int, email: String?) {
-//        this.id = id
-//        this.name = name
-//        this.age = age
-//        this.email = email
-//    }
-//}

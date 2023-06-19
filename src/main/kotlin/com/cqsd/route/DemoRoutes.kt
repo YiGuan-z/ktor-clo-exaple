@@ -43,8 +43,3 @@ private fun Route.demoIncrement() {
         call.respondText { count.toString() }
     }
 }
-private fun Route.loginRoute(){
-    post("/login") {
-
-    }
-}

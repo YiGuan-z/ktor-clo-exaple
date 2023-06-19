@@ -2,9 +2,19 @@ package com.cqsd.plugins
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.response.*
+
+object JwtConfig {
+    lateinit var secret: String
+    lateinit var audience: String
+    lateinit var realm: String
+    lateinit var domain: String
+    lateinit var issuer: String
+}
 
 fun Application.configureSecurity() {
 
@@ -17,6 +27,14 @@ fun Application.configureSecurity() {
     val jwtAudience = environment.config.property("jwt.audience").getString()
     val jwtRealm = environment.config.property("jwt.realm").getString()
     val jwtDomain = environment.config.property("jwt.domain").getString()
+    val jwtIssuer = environment.config.property("jwt.issuer").getString()
+    JwtConfig.apply {
+        this.domain = jwtDomain
+        this.audience = jwtAudience
+        this.realm = jwtRealm
+        this.secret = jwtSecret
+        this.issuer = jwtIssuer
+    }
     authentication {
         jwt {
             realm = jwtRealm
@@ -24,16 +42,19 @@ fun Application.configureSecurity() {
                 JWT
                     .require(Algorithm.HMAC256(jwtSecret))
                     .withAudience(jwtAudience)
-                    .withIssuer(jwtDomain)
+                    .withIssuer(jwtIssuer)
                     .build()
             )
             validate { credential ->
-                if (credential.payload.audience.contains(jwtAudience)) {
+                if (credential.payload.getClaim("userId").asLong() != -1L) {
                     JWTPrincipal(credential.payload)
                 } else {
                     null
                 }
             }
+//            challenge{ defaultScheme, realm ->
+//                call.respond(status = HttpStatusCode.Unauthorized, message = "Token is not valid or has expired")
+//            }
         }
     }
 }
