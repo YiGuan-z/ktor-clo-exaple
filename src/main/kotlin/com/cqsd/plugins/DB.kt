@@ -2,8 +2,9 @@ package com.cqsd.plugins
 
 import com.alibaba.druid.pool.DruidDataSource
 import com.cqsd.module.UserDefinition
-import com.cqsd.plugins.def.KtormPlugin
-import com.cqsd.plugins.def.buildDataSource
+import com.cqsd.plugins.adaptor.KtormConfig
+import com.cqsd.plugins.adaptor.KtormPlugin
+import com.cqsd.plugins.adaptor.configureDataSource
 import io.ktor.server.application.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,22 +19,26 @@ import org.ktorm.entity.sequenceOf
  **/
 private const val rootPath = "dataSource"
 fun Application.configureKtorm() {
-    val fastStart = environment.config.propertyOrNull("$rootPath.fastStartServer")?.getString()?.toBoolean() ?: false
-    if (fastStart) {
-        launch {
-            withContext(Dispatchers.IO) {
-                installKtormPlugin()
-            }
-        }
-    } else {
-        installKtormPlugin()
-    }
+//    val fastStart = environment.config.propertyOrNull("$rootPath.fastStartServer")?.getString()?.toBoolean() ?: false
+//    if (fastStart) {
+//        launch {
+//            withContext(Dispatchers.IO) {
+//                installKtormPlugin()
+//            }
+//        }
+//    } else {
+//        installKtormPlugin()
+//    }
+    installKtormPlugin()
 }
 
 private fun Application.installKtormPlugin() {
     install(KtormPlugin) {
         val config = environment.config
-        buildDataSource {
+        //标识使用单个数据源
+        manyDataSource = KtormConfig.UseDataSource.Single
+        fastStartServer = true
+         configureDataSource {
             DruidDataSource().apply {
                 driverClassName = config.property("$rootPath.drivelClassName").getString()
                 url = config.property("$rootPath.url").getString()
