@@ -1,5 +1,6 @@
 package com.cqsd.plugins.adaptor
 
+import com.alibaba.druid.pool.DruidDataSource
 import com.cqsd.plugins.adaptor.KtormAdaptorException.DataSourceInitializeException.MultipleDataInitializeException
 import io.ktor.server.application.*
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,15 @@ val Application.databaseCollection: Map<String, Database>
         return dataBaseCollection
     }
 
+private const val KtormConfigPath = "dataSources"
+
+/**
+ * get DataSource config
+ */
+private fun Map<String, Any?>.getDataSourcesConfig(): ArrayList<HashMap<String, Any?>> {
+    return this[KtormConfigPath] as ArrayList<HashMap<String, Any?>>
+}
+
 /**
  * TODO 需要添加多数据源，首先编写DSL并在代码中接上多数据源，多数据源块和单数据源块不能共存，只能单独使用。
  *  不需要定义默认值，检测到有配置[DataSource]则使用[DataSource]，没有就检测配置，配置也没有就会出异常
@@ -42,20 +52,25 @@ val KtormPlugin = createApplicationPlugin("KtormPlugin", ::KtormConfig) {
         val readManyDataSourceConfig = readManyDataSourceConfig(map)
         //将解析完毕的配置添加到集合中
         //如果代码中配置了相同的url，则进行去重
-        pluginConfig.dataSourceCollection+=readManyDataSourceConfig
-        initManyDataSource(readManyDataSourceConfig)
+        readManyDataSourceConfig?.let {
+            pluginConfig.dataSourceCollection += it
+        }
+        //对多数据源进行初始化
+        initManyDataSource()
     } else {
         //单数据源路径
-        val sourceConfig = readSingleDataSourceConfig(map)
+        readSingleDataSourceConfig()
         ///如果读出来没有url的话，就看代码配置有没有，如果也没有就抛出异常
+        //对数据源进行初始化,配置文件没有就走代码路径
         initDataSource()
     }
 }
 
 /**
  * 读取配置文件,根据配置文件解析多数据源
+ * 如果传入map为空，则使用代码配置
  */
-private fun PluginBuilder<KtormConfig>.readManyDataSourceConfig(map: Map<String, Any?>?): Collection<DataSourceConfig> {
+private fun PluginBuilder<KtormConfig>.readManyDataSourceConfig(map: Map<String, Any?>?): Collection<DataSourceConfig>? {
     /*
     * password
     * fastStartServer
@@ -67,13 +82,38 @@ private fun PluginBuilder<KtormConfig>.readManyDataSourceConfig(map: Map<String,
     * maxActive
     * minIdle
     * */
-    TODO()
+    if (map == null) {
+        return null
+    }
+    val sourceConfig = map.getDataSourcesConfig()
+    val configs = sourceConfig.map {
+        val password = it["password"] as String?
+        val fastStartServer = it["fastStartServer"] as Boolean? ?: false
+        val name = it["name"] as String
+        val drivelClassName = it["drivelClassName"] as String?
+        //url不能为空
+        val url = it["url"] as String
+        val username = it["username"] as String
+        val dataSourceConfig =
+            DataSourceConfig(name = name, fastStartServer = fastStartServer, DruidDataSource().apply {
+                this.url = url
+                this.driverClassName = drivelClassName
+                this.username = username
+                this.password = password
+                this.initialSize = it["initialSize"] as Int? ?: 5
+                this.maxActive = it["maxActive"] as Int? ?: 10
+                this.minIdle = it["minIdle"] as Int? ?: 5
+            })
+        dataSourceConfig
+    }
+    return configs
 }
 
 /**
  * 读取配置文件，根据配置文件解析单数据源
+ * 如果传入map为空，则使用代码配置
  */
-private fun PluginBuilder<KtormConfig>.readSingleDataSourceConfig(map: Map<String, Any?>?): DataSourceConfig {
+private fun PluginBuilder<KtormConfig>.readSingleDataSourceConfig() {
     /*
     * drivelClassName
     * url
@@ -84,7 +124,18 @@ private fun PluginBuilder<KtormConfig>.readSingleDataSourceConfig(map: Map<Strin
     * minIdle
     * fastStartServer
     * */
-    TODO()
+    if (this.pluginConfig.url != null) {
+        return
+    }
+    val rootPath = "dataSource"
+    val config = environment!!.config
+    this.pluginConfig.apply {
+        driverClassName = config.property("$rootPath.drivelClassName").getString()
+        url = config.property("$rootPath.url").getString()
+        username = config.property("$rootPath.username").getString()
+        password = config.property("$rootPath.password").getString()
+    }
+    return
 }
 
 /**
@@ -138,7 +189,7 @@ internal fun PluginBuilder<KtormConfig>.initDataSource() {
  * 里面的配置只适合单数据源，如果配置了多数据源想返回单数据源的，请在配置最后将[KtormConfig.manyDataSource]设置为false
  * TODO 解析配置
  */
-internal fun PluginBuilder<KtormConfig>.initManyDataSource(readManyDataSourceConfig: Collection<DataSourceConfig>) {
+internal fun PluginBuilder<KtormConfig>.initManyDataSource() {
     val config = pluginConfig
     if (config.dataSourceCollection.isNotEmpty()) {
         config.dataSourceCollection.forEach { dataSourceConfig ->
@@ -158,6 +209,7 @@ internal fun PluginBuilder<KtormConfig>.initManyDataSource(readManyDataSourceCon
                 dataBaseCollection += dataSourceConfig.name to database
             }
         }
+        return
     }
     throw MultipleDataInitializeException("Multi-data source initialization failed")
 }
