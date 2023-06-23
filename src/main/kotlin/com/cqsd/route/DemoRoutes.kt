@@ -1,8 +1,8 @@
 package com.cqsd.route
 
 
-import com.cqsd.plugins.adaptor.database
-import com.cqsd.plugins.user
+import com.cqsd.plugins.ktorm.adaptor.database
+import com.cqsd.service.user
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*

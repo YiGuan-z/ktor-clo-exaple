@@ -17,17 +17,12 @@ object JwtConfig {
 }
 
 fun Application.configureSecurity() {
-
-    // Please read the jwt property from the config file if you are using EngineMain
-//    val jwtAudience = "jwt-audience"
-//    val jwtDomain = "https://jwt-provider-domain/"
-//    val jwtRealm = "ktor sample app"
-//    val jwtSecret = "secret"
-    val jwtSecret = environment.config.property("jwt.secret").getString()
-    val jwtAudience = environment.config.property("jwt.audience").getString()
-    val jwtRealm = environment.config.property("jwt.realm").getString()
-    val jwtDomain = environment.config.property("jwt.domain").getString()
-    val jwtIssuer = environment.config.property("jwt.issuer").getString()
+    val config = environment.config.config("jwt")
+    val jwtSecret = config.property("secret").getString()
+    val jwtAudience = config.property("audience").getString()
+    val jwtRealm = config.property("realm").getString()
+    val jwtDomain = config.property("domain").getString()
+    val jwtIssuer = config.property("issuer").getString()
     JwtConfig.apply {
         this.domain = jwtDomain
         this.audience = jwtAudience
@@ -58,8 +53,11 @@ fun Application.configureSecurity() {
                 }
             }
             //验证失败如何返回
-            challenge{ defaultScheme, realm ->
-                call.respond(status = HttpStatusCode.Unauthorized, message = "Token is not valid or has expired : $realm ,$defaultScheme")
+            challenge { defaultScheme, realm ->
+                call.respond(
+                    status = HttpStatusCode.Unauthorized,
+                    message = "Token is not valid or has expired : $realm ,$defaultScheme"
+                )
             }
 
         }

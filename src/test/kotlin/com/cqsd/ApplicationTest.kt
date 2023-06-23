@@ -1,11 +1,8 @@
 package com.cqsd
 
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
+import com.cqsd.plugins.configureRouting
 import io.ktor.server.testing.*
-import kotlin.test.*
-import io.ktor.http.*
-import com.cqsd.plugins.*
+import kotlin.test.Test
 
 class ApplicationTest {
     @Test
@@ -13,9 +10,5 @@ class ApplicationTest {
         application {
             configureRouting()
         }
-//        client.get("/").apply {
-//            assertEquals(HttpStatusCode.OK, status)
-//            assertEquals("Hello World!", bodyAsText())
-//        }
     }
 }
