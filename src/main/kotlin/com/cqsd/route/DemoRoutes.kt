@@ -1,13 +1,23 @@
 package com.cqsd.route
 
-
-import com.cqsd.plugins.ktorm.adaptor.database
-import com.cqsd.service.user
+import com.cqsd.di.BaseController
+import com.cqsd.route.LoginRoutes.Data.user
 import io.ktor.http.*
+import io.ktor.resources.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.resources.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.kodein.di.DI
+import org.kodein.di.instance
+import org.ktorm.database.Database
 import org.ktorm.entity.toCollection
+import kotlin.collections.MutableMap
+import kotlin.collections.getOrPut
+import kotlin.collections.mutableListOf
+import kotlin.collections.mutableMapOf
+import kotlin.collections.set
 
 /**
  *
@@ -22,24 +32,37 @@ object NamesPool {
         pool[name] = count
         return count
     }
-}
 
-fun Route.demoRoutes() {
-    ping()
-    demoIncrement()
-}
+    class Controller(override val di: DI) : BaseController() {
+        val db: Database by instance()
+        override fun Route.registerRoutes() {
+            authenticate {
+                ping()
+            }
+            demoIncrement()
+        }
 
-private fun Route.ping() {
-    get {
-        val users = application.database.user.toCollection(mutableListOf())
-        call.respond(status = HttpStatusCode.OK, message = users)
+        private fun Route.ping() {
+            get<Routes.Ping> {
+                val users = db.user.toCollection(mutableListOf())
+                call.respond(status = HttpStatusCode.OK, message = users)
+            }
+        }
+
+        private fun Route.demoIncrement() {
+            get<Routes.PingCounter> {
+                val name = it.name
+                val count = NamesPool[name]
+                call.respondText { count.toString() }
+            }
+        }
     }
-}
 
-private fun Route.demoIncrement() {
-    get("/{name}/count") {
-        val name = call.parameters["name"] ?: "unknown"
-        val count = NamesPool[name]
-        call.respondText { count.toString() }
+    object Routes {
+        @Resource("/ping")
+        object Ping
+
+        @Resource("/ping/{name}/count")
+        data class PingCounter(val name: String)
     }
 }

@@ -1,5 +1,6 @@
 package com.cqsd
 
+import kotlin.reflect.jvm.javaGetter
 import kotlin.test.Test
 
 /**
@@ -24,5 +25,14 @@ class ByteCodeTest {
         e?.let {
             println(e::class.java)
         }
+    }
+
+    val isStatus: Boolean = true
+    val isActive: Boolean? = true
+
+    @Test
+    fun prop() {
+        print(ByteCodeTest::isStatus::javaGetter.get()?.name)
+        println(ByteCodeTest::isActive::javaGetter.get()?.name)
     }
 }

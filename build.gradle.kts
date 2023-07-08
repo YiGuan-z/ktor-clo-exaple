@@ -22,16 +22,10 @@ application {
 repositories {
     mavenLocal()
     mavenCentral()
-//    maven {
-//        url = uri("https://maven.pkg.github.com/YiGuan-z/ktor-ktorm-config-plugins")
-//        credentials {
-//            username = project.findProject("gpr.user") as String? ?: System.getenv("PUB_USERNAME")
-//            password = project.findProject("gpr.key") as String? ?: System.getenv("PUB_TOKEN")
-//        }
-//    }
 }
 
 dependencies {
+    implementation("io.ktor:ktor-server-resources")
     implementation("io.ktor:ktor-server-cors-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
@@ -49,8 +43,9 @@ dependencies {
     implementation("mysql:mysql-connector-java:8.0.33")
 //    // https://mvnrepository.com/artifact/com.alibaba/druid
     implementation("com.alibaba:druid:1.2.18")
-    implementation("com.cqsd.plugins.ktorm:ktor-ktorm-config-plugins:$ktor_ktorm_config_plugins_version")
-
+//    implementation("com.cqsd.plugins.ktorm:ktor-ktorm-config-plugins:$ktor_ktorm_config_plugins_version")
+    implementation("io.ktor:ktor-server-call-logging-jvm:2.3.1")
+    implementation("org.kodein.di:kodein-di-jvm:7.17.0")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
