@@ -2,22 +2,22 @@ package com.cqsd.route
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.cqsd.di.BaseController
+import com.cqsd.di.DBController
 import com.cqsd.plugins.JwtConfig
 import com.cqsd.route.LoginRoutes.Data.user
 import io.ktor.http.*
-import io.ktor.resources.*
-import io.ktor.server.resources.post
 import io.ktor.server.application.*
+import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
 import org.kodein.di.DI
-import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.QueryRowSet
 import org.ktorm.dsl.eq
@@ -36,14 +36,22 @@ import java.util.*
  **/
 
 object LoginRoutes {
-    class Controller(override val di: DI) : BaseController() {
-        val db: Database by instance()
+    class Controller(override val di: DI) : DBController() {
         override fun Route.registerRoutes() {
             loginRoutes()
         }
 
+        @OptIn(ExperimentalSerializationApi::class)
+        override fun StatusPagesConfig.registerExceptionHandle() {
+            exception<MissingFieldException> { call, cause ->
+                val field = cause.missingFields.first()
+                call.respondText(text = "missing args for $field")
+            }
+
+        }
+
         private fun Route.loginRoutes() {
-            post<Routes.UserLoginRequest> { req ->
+            post<Routes.UserLoginRequest>(path = "/login") { req ->
                 flowOf(req)
                     .flowOn(Dispatchers.IO)
                     .map { loginRequest ->
@@ -77,9 +85,10 @@ object LoginRoutes {
     }
 
     object Routes {
-        @Resource("/login")
+        //        @Resource("/login")
         @Serializable
         data class UserLoginRequest(val id: Long, val age: Int)
+        //MissingFieldException
     }
 
     object Data {

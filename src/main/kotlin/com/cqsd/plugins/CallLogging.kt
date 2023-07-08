@@ -14,5 +14,6 @@ fun Application.configureLogging() {
     install(CallLogging) {
         level = Level.INFO
         filter { call -> call.request.path().startsWith("/") }
+        filter { call -> call.request.path().startsWith("/login") }
     }
 }

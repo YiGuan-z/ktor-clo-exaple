@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-resources")
+    implementation("io.ktor:ktor-server-resources:$ktor_version")
     implementation("io.ktor:ktor-server-cors-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
@@ -36,9 +36,12 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-cio-jvm:$ktor_version")
+    //异常处理
+    implementation("io.ktor:ktor-server-status-pages:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
 //    // https://mvnrepository.com/artifact/org.ktorm/ktorm-core
-    implementation("org.ktorm:ktorm-core:3.6.0")
+    implementation("org.ktorm:ktorm-core:$ktorm_version")
+    implementation("org.ktorm:ktorm-support-mysql:$ktorm_version")
 //    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
     implementation("mysql:mysql-connector-java:8.0.33")
 //    // https://mvnrepository.com/artifact/com.alibaba/druid

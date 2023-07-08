@@ -1,6 +1,6 @@
 package com.cqsd.route
 
-import com.cqsd.di.BaseController
+import com.cqsd.di.DBController
 import com.cqsd.route.LoginRoutes.Data.user
 import io.ktor.http.*
 import io.ktor.resources.*
@@ -10,13 +10,7 @@ import io.ktor.server.resources.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.kodein.di.DI
-import org.kodein.di.instance
-import org.ktorm.database.Database
 import org.ktorm.entity.toCollection
-import kotlin.collections.MutableMap
-import kotlin.collections.getOrPut
-import kotlin.collections.mutableListOf
-import kotlin.collections.mutableMapOf
 import kotlin.collections.set
 
 /**
@@ -33,8 +27,7 @@ object NamesPool {
         return count
     }
 
-    class Controller(override val di: DI) : BaseController() {
-        val db: Database by instance()
+    class Controller(override val di: DI) : DBController() {
         override fun Route.registerRoutes() {
             authenticate {
                 ping()
