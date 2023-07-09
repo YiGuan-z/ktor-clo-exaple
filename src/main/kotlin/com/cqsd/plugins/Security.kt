@@ -18,11 +18,13 @@ object JwtConfig {
 
 fun Application.configureSecurity() {
     val config = environment.config.config("jwt")
+
     val jwtSecret = config.property("secret").getString()
     val jwtAudience = config.property("audience").getString()
     val jwtRealm = config.property("realm").getString()
     val jwtDomain = config.property("domain").getString()
     val jwtIssuer = config.property("issuer").getString()
+
     JwtConfig.apply {
         this.domain = jwtDomain
         this.audience = jwtAudience
@@ -37,6 +39,7 @@ fun Application.configureSecurity() {
         jwt {
             realm = jwtRealm
             //用于对token的解码
+            //decode userToken
             verifier(
                 JWT
                     .require(Algorithm.HMAC256(jwtSecret))
@@ -44,9 +47,10 @@ fun Application.configureSecurity() {
                     .withIssuer(jwtIssuer)
                     .build()
             )
-            //用于对token的验证
+            //validate user token content
             validate { credential ->
                 if (credential.payload.getClaim("userId").asLong() != -1L) {
+                    //可以在这里添加
                     JWTPrincipal(credential.payload)
                 } else {
                     null

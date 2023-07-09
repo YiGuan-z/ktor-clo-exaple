@@ -31,6 +31,8 @@ fun Application.configureHTTP() {
         header("X-Engine", "Ktor") // will send this header with each response
     }
     routing {
-        swaggerUI(path = "openapi")
+        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml"){
+            version = "0.0.1"
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.cqsd.plugins
 
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.statuspages.*
@@ -16,21 +17,30 @@ import kotlinx.serialization.MissingFieldException
 fun Application.configureStatusPage(callback: StatusPagesConfig.() -> Unit = {}) {
     install(StatusPages) {
         exception<BadRequestException> { call, cause ->
-            var th: Throwable? = cause
-            do {
-                if (th == null) {
-                    break
-                }
-                if (th is MissingFieldException) {
-                    val field = th.missingFields.first()
-                    call.respondText(text = "missing args for $field")
-                    return@exception
-                }
-                //(call,Exception)->Unit
-                th = th.cause
-            } while (th != null)
+            cause.backtracking<MissingFieldException> { missing ->
+                val field = missing.missingFields.first()
+                call.respondText(text = "missing args for $field", status = HttpStatusCode.BadRequest)
+            } ?: return@exception
+
             call.respondText(text = "未知错误🙅，原因是$cause")
         }
         callback(this)
     }
+}
+
+suspend inline fun <reified Exception : Throwable> Throwable.backtracking(
+    noinline handler: suspend (cause: Exception) -> Unit
+): Throwable? {
+    val save = this
+    var throwable: Throwable? = this
+    do {
+        if (throwable == null) break
+
+        if (throwable is Exception) {
+            handler(throwable)
+            return null
+        }
+        throwable = throwable.cause
+    } while (throwable != null)
+    return save
 }

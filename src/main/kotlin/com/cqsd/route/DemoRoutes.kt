@@ -1,7 +1,6 @@
 package com.cqsd.route
 
-import com.cqsd.di.DBController
-import com.cqsd.route.LoginRoutes.Data.user
+import com.cqsd.entry.user
 import io.ktor.http.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
@@ -19,9 +18,9 @@ import kotlin.collections.set
  * @date 2023/6/18-19:39
  **/
 object NamesPool {
-    private val pool: MutableMap<String, Long> = mutableMapOf()
-    operator fun get(name: String): Long {
-        var count = pool.getOrPut(name) { 0L }
+    private val pool: MutableMap<String, Int> = mutableMapOf()
+    operator fun get(name: String): Int {
+        var count = pool.getOrPut(name) { 0 }
         count += 1
         pool[name] = count
         return count
