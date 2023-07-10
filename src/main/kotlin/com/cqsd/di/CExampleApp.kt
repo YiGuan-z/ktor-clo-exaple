@@ -15,7 +15,10 @@ import org.slf4j.Logger
  * @date 2023/7/8 19:25
  * @doc
  */
-internal lateinit var globalDI: DI
+object App {
+    lateinit var diContent: DI
+}
+
 fun Application.exampleApp(kodeinMapper: DI.MainBuilder.(Application) -> Unit = {}) {
     val application = this
     // logger
@@ -33,15 +36,13 @@ fun Application.exampleApp(kodeinMapper: DI.MainBuilder.(Application) -> Unit = 
     //serialization
     application.configureSerialization()
 
-    globalDI = DI {
+    App.diContent = DI {
         bind<Application>() with instance(application)
         bind<Database>() with instance(db)
         kodeinMapper(this, application)
     }
 
-    val controllers: List<BaseController> = globalDI.collect(mutableListOf())
-
-//    val services: List<BaseService> = globalDI.collect(mutableListOf())
+    val controllers: List<BaseController> = App.diContent.collect(mutableListOf())
 
     routing {
         controllers.forEach { controller ->
@@ -58,7 +59,9 @@ fun Application.exampleApp(kodeinMapper: DI.MainBuilder.(Application) -> Unit = 
     }
 }
 
-
+/**
+ * used to Shortcuts
+ */
 inline fun <reified T : Any> DI.Builder.bindSingleton(crossinline callback: (DI) -> T) {
     bind<T>() with singleton { callback(this@singleton.di) }
 }

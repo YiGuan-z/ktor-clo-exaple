@@ -4,8 +4,8 @@ import com.cqsd.di.bindSingleton
 import com.cqsd.di.exampleApp
 import com.cqsd.route.DemoRoutes
 import com.cqsd.route.LoginRoutes
-import com.cqsd.service.impl.DemoRoutesServiceImpl
-import com.cqsd.service.impl.LoginRoutesServiceImpl
+import com.cqsd.service.DemoRoutesService
+import com.cqsd.service.LoginRoutesService
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import org.kodein.di.DI
@@ -31,6 +31,7 @@ fun DI.MainBuilder.bindController() {
 }
 
 fun DI.MainBuilder.bindService() {
-    bindSingleton { DemoRoutesServiceImpl(it) }
-    bindSingleton { LoginRoutesServiceImpl(it) }
+//    bindSingleton { DemoRoutesServiceImpl(it) }
+    bindSingleton { DemoRoutesService }
+    bindSingleton { LoginRoutesService }
 }
