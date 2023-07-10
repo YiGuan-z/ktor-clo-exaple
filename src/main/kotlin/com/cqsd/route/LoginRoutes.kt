@@ -2,8 +2,8 @@ package com.cqsd.route
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.cqsd.entry.User
-import com.cqsd.entry.user
+import com.cqsd.dao.User
+import com.cqsd.dao.user
 import com.cqsd.plugins.JwtConfig
 import io.ktor.http.*
 import io.ktor.server.application.*

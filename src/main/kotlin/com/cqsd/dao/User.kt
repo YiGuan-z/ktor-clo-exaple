@@ -1,4 +1,4 @@
-package com.cqsd.entry
+package com.cqsd.dao
 
 import kotlinx.serialization.Serializable
 import org.ktorm.database.Database

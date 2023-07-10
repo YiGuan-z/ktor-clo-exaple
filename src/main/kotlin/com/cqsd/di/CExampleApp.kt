@@ -8,13 +8,13 @@ import io.ktor.server.routing.*
 import org.kodein.di.*
 import org.kodein.type.jvmType
 import org.ktorm.database.Database
+import org.slf4j.Logger
 
 /**
  * @author caseycheng
  * @date 2023/7/8 19:25
  * @doc
  */
-internal lateinit var di: DI
 fun Application.exampleApp(kodeinMapper: DI.MainBuilder.(Application) -> Unit = {}) {
     val application = this
     // logging
@@ -30,18 +30,17 @@ fun Application.exampleApp(kodeinMapper: DI.MainBuilder.(Application) -> Unit = 
     //serialization
     application.configureSerialization()
 
-    di = DI {
+    val di = DI {
         bind<Application>() with instance(application)
         bind<Database>() with instance(db)
         kodeinMapper(this, application)
     }
     //路由注册
-    val controllers = di.container.tree.bindings
-        .filter {
-            val clazz = it.key.type.jvmType as? Class<*>?
-            return@filter clazz != null && BaseController::class.java.isAssignableFrom(clazz)
-        }
-        .map { val controller by di.Instance(it.key.type); controller as BaseController }
+    val controllers: List<BaseController> = di.collect(mutableListOf())
+    //注册模块
+    val module = DI.Module("service") {
+        controllers.forEach { controller -> controller.apply { registerModule() } }
+    }
 
     routing {
         controllers.forEach { controller -> controller.apply { registerRoutes() } }
@@ -55,4 +54,19 @@ fun Application.exampleApp(kodeinMapper: DI.MainBuilder.(Application) -> Unit = 
 
 inline fun <reified T : Any> DI.MainBuilder.bindSingleton(crossinline callback: (DI) -> T) {
     bind<T>() with singleton { callback(this@singleton.di) }
+}
+
+/**
+ * collect of objects in the container
+ */
+inline fun <reified Type, Coll : MutableCollection<Type>> DI.collect(collection: Coll): Coll {
+    val log by this.instance<Logger>()
+    for (binding in this.container.tree.bindings) {
+        val clazz = binding.key.type.jvmType as? Class<*>? ?: continue
+        if (Type::class.java.isAssignableFrom(clazz)) {
+            val instance by this.Instance(binding.key.type)
+            collection.add(instance as Type)
+        }
+    }
+    return collection
 }
