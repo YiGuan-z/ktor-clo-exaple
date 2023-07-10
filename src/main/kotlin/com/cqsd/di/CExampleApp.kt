@@ -15,8 +15,11 @@ import org.slf4j.Logger
  * @date 2023/7/8 19:25
  * @doc
  */
+internal lateinit var globalDI: DI
 fun Application.exampleApp(kodeinMapper: DI.MainBuilder.(Application) -> Unit = {}) {
     val application = this
+    // logger
+    val log = application.log
     // logging
     application.configureLogging()
     //db
@@ -30,20 +33,24 @@ fun Application.exampleApp(kodeinMapper: DI.MainBuilder.(Application) -> Unit = 
     //serialization
     application.configureSerialization()
 
-    val di = DI {
+    globalDI = DI {
         bind<Application>() with instance(application)
         bind<Database>() with instance(db)
         kodeinMapper(this, application)
     }
-    //路由注册
-    val controllers: List<BaseController> = di.collect(mutableListOf())
-    //注册模块
-    val module = DI.Module("service") {
-        controllers.forEach { controller -> controller.apply { registerModule() } }
-    }
+
+    val controllers: List<BaseController> = globalDI.collect(mutableListOf())
+
+//    val services: List<BaseService> = globalDI.collect(mutableListOf())
 
     routing {
-        controllers.forEach { controller -> controller.apply { registerRoutes() } }
+        controllers.forEach { controller ->
+            val name = controller::class.qualifiedName
+            controller.apply {
+                log.info("{}的路由已加载", name)
+                registerRoutes()
+            }
+        }
     }
 
     application.configureStatusPage {
@@ -52,7 +59,7 @@ fun Application.exampleApp(kodeinMapper: DI.MainBuilder.(Application) -> Unit = 
 }
 
 
-inline fun <reified T : Any> DI.MainBuilder.bindSingleton(crossinline callback: (DI) -> T) {
+inline fun <reified T : Any> DI.Builder.bindSingleton(crossinline callback: (DI) -> T) {
     bind<T>() with singleton { callback(this@singleton.di) }
 }
 

@@ -1,10 +1,7 @@
 package com.cqsd.route
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
-import com.cqsd.dao.User
 import com.cqsd.dao.user
-import com.cqsd.plugins.JwtConfig
+import com.cqsd.service.LoginRoutesService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -15,9 +12,9 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import org.kodein.di.DI
+import org.kodein.di.instance
 import org.ktorm.dsl.eq
 import org.ktorm.entity.find
-import java.util.*
 
 /**
  *
@@ -27,6 +24,8 @@ import java.util.*
 
 object LoginRoutes {
     class Controller(override val di: DI) : DBController() {
+        private val service: LoginRoutesService by instance()
+
         override fun Route.registerRoutes() {
             loginRoutes()
         }
@@ -38,7 +37,7 @@ object LoginRoutes {
                     .map { loginRequest ->
                         db.user.find { u -> u.id eq loginRequest.id }?.let { user ->
                             if (loginRequest.age == user.age) {
-                                val token = Service.createJWT(user)
+                                val token = service.createJWT(user)
                                 return@map mapOf("token" to token)
                             }
                             null
@@ -54,24 +53,10 @@ object LoginRoutes {
         }
     }
 
-    object Service {
-        @JvmStatic
-        fun createJWT(user: User, millis: Long = 60000): JwtToken {
-            return JWT.create()
-                .withAudience(JwtConfig.audience)
-                .withIssuer(JwtConfig.issuer)
-                .withClaim("userId", user.id)
-                .withExpiresAt(Date(System.currentTimeMillis() + millis))
-                .sign(Algorithm.HMAC256(JwtConfig.secret))
-        }
-    }
-
     object RequestObj {
         @Serializable
         data class UserLoginRequest(val id: Long, val age: Int)
     }
 
 }
-
-typealias JwtToken = String
 
